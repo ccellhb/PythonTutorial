@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-import urllib
 import urllib.request        
 
 #THE PROXY INFO
-proxy='username:password@url:port'
+proxy='username:password@server:port'
 #OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL
 proxy_handler = proxy_handler = urllib.request.ProxyHandler({'http':proxy})   
 
@@ -73,7 +71,7 @@ for element in url_list:
     html = " <HTML><BODY>" +"<H4>"+title+"</H4>"+ html+"</body></html>"
     
     #WRITE FILES
-    filename="docs/" + "%02d.%d " % (level1_index,level2_index) + title + '.html'
+    filename="docs/" + "%d.%d " % (level1_index,level2_index) + title + '.html'
     print("name:"+filename)
     output = open(filename, 'w')
     output.write(html)
