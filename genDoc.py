@@ -66,9 +66,14 @@ for element in url_list:
     
     #TRANSFER THE PATH OF THE <SRC> DOCS
     html = html.replace(r'src="', 'src="' + 'http://www.liaoxuefeng.com')
-
+    
     #COMPLETE THE HTML
-    html = " <HTML><BODY>" +"<H4>"+title+"</H4>"+ html+"</body></html>"
+    html = r''' <HTML><head>
+    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/codemirror.css">
+    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/highlight.css">
+    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/itranswarp.css">
+    </HEAD>
+    <BODY>''' +"<H4>"+title+"</H4>"+ html+"</body></html>"
     
     #WRITE FILES
     filename="docs/" + "%d.%d " % (level1_index,level2_index) + title + '.html'
