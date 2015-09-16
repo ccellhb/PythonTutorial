@@ -69,9 +69,9 @@ for element in url_list:
     
     #COMPLETE THE HTML
     html = r''' <HTML><head>
-    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/codemirror.css">
-    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/highlight.css">
-    <link rel="stylesheet" href="http://www.liaoxuefeng.com/static/themes/default/css/itranswarp.css">
+    <link rel="stylesheet" href="css/codemirror.css">
+    <link rel="stylesheet" href="css/highlight.css">
+    <link rel="stylesheet" href="css/itranswarp.css">
     </HEAD>
     <BODY>''' +"<H4>"+title+"</H4>"+ html+"</body></html>"
     
