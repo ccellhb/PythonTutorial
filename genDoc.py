@@ -1,49 +1,67 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import urllib.request        
+
+import urllib.request, asyncio      
 
 #THE PROXY INFO
-proxy='username:password@server:port'
+proxy='name:pwd@server:port'
 #OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL
-proxy_handler = proxy_handler = urllib.request.ProxyHandler({'http':proxy})   
+proxy_handler = proxy_handler = urllib.request.ProxyHandler({'http':proxy})
 
-opener = urllib.request.build_opener(proxy_handler)
-f = opener.open("http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000")
-home_page = f.read()
-f.close()
-
-#MAKE IT IN ONE LINE
-home_page=str(home_page)
-home_page = home_page.replace("\\n", "")
-home_url = home_page.replace(" ", "")
-
-#FETCH THE URL STRINGS 
-url_list = home_url.split(r'style="margin-left:')[1:122]
-#ADD THE FIRST PAGE
-url_list.insert(0, '1em;"><ahref="/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000">')
-
-level1_index=-1
-level2_index=-1
-last_level_index=-1
-#FETCH THE CONTENTS
-for element in url_list:
+def get_pages_info():
     
-    #GET THE LEVEL OF THE ARTICLE
-    level=element[0]
-    if level=='1':
-        level1_index=level1_index+1 
-        level2_index=0
-    else:
-        level2_index=level2_index+1
+    print("get_pages_url... BEGIN")   
     
-    page_url = element.split(r'em;"><ahref="')[1]
-    page_url = page_url.split(r'">')[0]
-    page_url = 'http://www.liaoxuefeng.com' + page_url             
-     
-    proxy_handler = proxy_handler = urllib.request.ProxyHandler({'http':proxy})   
     opener = urllib.request.build_opener(proxy_handler)
-    f = opener.open(page_url)
+    f = opener.open("http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000")
+    home_page = f.read()
+    f.close()
+    
+    #MAKE IT IN ONE LINE
+    home_page=str(home_page)
+    home_page = home_page.replace("\\n", "")
+    home_url = home_page.replace(" ", "")
+    
+    #FETCH THE URL STRINGS 
+    url_list = home_url.split(r'style="margin-left:')[1:122]
+    #ADD THE FIRST PAGE
+    url_list.insert(0, '1em;"><ahref="/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000">')
+    
+    level1_index=-1
+    level2_index=-1
+    
+    page_info_list=[]
+    for element in url_list:
+        
+        #GET THE LEVEL OF THE ARTICLE
+        level=element[0]
+        if level=='1':
+            level1_index=level1_index+1 
+            level2_index=0
+        else:
+            level2_index=level2_index+1
+        
+        page_url = element.split(r'em;"><ahref="')[1]
+        page_url = page_url.split(r'">')[0]
+        page_url = 'http://www.liaoxuefeng.com' + page_url   
+        
+        page_info={}
+        page_info['level1']=level1_index
+        page_info['level2']=level2_index
+        page_info['url']=page_url
+        
+        page_info_list.append(page_info)
+    print("get_pages_url... DONE")
+    return page_info_list
+    
+
+@asyncio.coroutine
+def write_doc(page_info):
+    #THE PROXY INFO
+    #OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL 
+    opener = urllib.request.build_opener(proxy_handler)
+    f = opener.open(page_info['url'])
     html = f.read()
     f.close()
     #DECODE CHINESE CODE
@@ -53,7 +71,7 @@ for element in url_list:
     title = html.split("<h4>")[1].replace("/", " ")
     title = title.split("< h4>")[0]
     
-
+    
     #GET THE CONTENT
     html = str(html).split(r'<div class="x-wiki-content">')[1]
     html = html.split(r'''
@@ -76,9 +94,18 @@ for element in url_list:
     <BODY>''' +"<H4>"+title+"</H4>"+ html+"</body></html>"
     
     #WRITE FILES
-    filename="docs/" + "%d.%d " % (level1_index,level2_index) + title + '.html'
-    print("name:"+filename)
+    filename="docs/" + "%02d.%d " % (page_info['level1'],page_info['level2']) + title + '.html'
+    
     output = open(filename, 'w')
     output.write(html)
+    print("%s 处理完毕" % filename)
     output.close()
     
+
+
+if __name__ == '__main__':
+    page_info_list=get_pages_info()
+    loop=asyncio.get_event_loop()
+    tasks = [write_doc(page_info) for page_info in page_info_list]
+    loop.run_until_complete(asyncio.wait(tasks))
+    loop.close()
