@@ -2,19 +2,27 @@
 # -*- coding: utf-8 -*-
 
 
-import urllib.request, asyncio      
+import urllib.request, asyncio ,aiohttp     
+import time
 
 #THE PROXY INFO
-proxy='name:pwd@server:port'
-#OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL
-proxy_handler = proxy_handler = urllib.request.ProxyHandler({'http':proxy})
+proxy_uri="server:port"
+proxy_user = "user"
+proxy_pwd = "pwd"
+
+
+proxy_info=proxy_user+':'+proxy_pwd+'@'+proxy_uri
+proxy_sever = 'http://'+proxy_uri
+proxy_handler = urllib.request.ProxyHandler({'http':proxy_info})
+urlopener = urllib.request.build_opener(proxy_handler)
+
 
 def get_pages_info():
     
     print("get_pages_url... BEGIN")   
     
-    opener = urllib.request.build_opener(proxy_handler)
-    f = opener.open("http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000")
+    #OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL
+    f = urlopener.open("http://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000")
     home_page = f.read()
     f.close()
     
@@ -58,14 +66,19 @@ def get_pages_info():
 
 @asyncio.coroutine
 def write_doc(page_info):
-    #THE PROXY INFO
+    print("docs/" + "%02d.%d 正在处理" %(page_info['level1'],page_info['level2']) )
     #OPEN THE HOME PAGE OF LIAO'S PATHON TUTORIAL 
+    '''
     opener = urllib.request.build_opener(proxy_handler)
     f = opener.open(page_info['url'])
     html = f.read()
     f.close()
     #DECODE CHINESE CODE
     html=html.decode('utf-8') 
+    '''
+    conn = aiohttp.ProxyConnector(proxy=proxy_sever,proxy_auth=aiohttp.BasicAuth(proxy_user, proxy_pwd))
+    response = yield from aiohttp.get(page_info['url'], connector=conn)
+    html = yield from response.text()
     
     #GET THE TITLE
     title = html.split("<h4>")[1].replace("/", " ")
@@ -104,8 +117,11 @@ def write_doc(page_info):
 
 
 if __name__ == '__main__':
+    start = time.clock()
     page_info_list=get_pages_info()
     loop=asyncio.get_event_loop()
     tasks = [write_doc(page_info) for page_info in page_info_list]
     loop.run_until_complete(asyncio.wait(tasks))
     loop.close()
+    end = time.clock()
+    print ("cost: %f s" % (end - start))
